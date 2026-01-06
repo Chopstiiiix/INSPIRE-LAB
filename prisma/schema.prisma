@@ -1,0 +1,481 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserStatus {
+  PENDING    // User signed up but hasn't completed onboarding
+  ACTIVE     // User completed onboarding and is active
+  SUSPENDED  // User is suspended (moderation)
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum ToolLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum ProjectStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ARCHIVED
+  CANCELLED
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+  CONNECTIONS_ONLY
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum ReportStatus {
+  PENDING
+  INVESTIGATING
+  RESOLVED
+  DISMISSED
+}
+
+enum ReportReason {
+  SPAM
+  HARASSMENT
+  INAPPROPRIATE_CONTENT
+  IMPERSONATION
+  FALSE_INFORMATION
+  OTHER
+}
+
+enum NotificationType {
+  FOLLOW
+  VOUCH
+  PROJECT_UPDATE
+  SYSTEM
+}
+
+// ============================================================================
+// USER & AUTH MODELS
+// ============================================================================
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  emailVerified DateTime?
+  password      String?
+  name          String?
+  handle        String?    @unique
+  avatar        String?
+  roleTitle     String?
+  bio           String?
+  location      String?
+  website       String?
+
+  status        UserStatus @default(PENDING)
+  role          UserRole   @default(USER)
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  lastActiveAt  DateTime   @default(now())
+
+  // Auth.js relations
+  accounts      Account[]
+  sessions      Session[]
+
+  // Invite system
+  invitedBy     User?     @relation("UserInvites", fields: [invitedById], references: [id])
+  invitedById   String?
+  invitedUsers  User[]    @relation("UserInvites")
+
+  // Profile sections
+  links          Link[]
+  userSkills     UserSkill[]
+  userTools      UserTool[]
+  projects       Project[]
+  qualifications Qualification[]
+
+  // Social graph
+  following      Follow[]  @relation("Following")
+  followers      Follow[]  @relation("Followers")
+
+  vouchesGiven   Vouch[]   @relation("Voucher")
+  vouchesReceived Vouch[]  @relation("Candidate")
+
+  // Invite codes
+  inviteCodesCreated InviteCode[]      @relation("InviteCodeCreator")
+  inviteRedemptions  InviteRedemption[]
+
+  // Moderation
+  reportsCreated Report[] @relation("Reporter")
+  reportsReceived Report[] @relation("Reported")
+
+  // Notifications
+  notifications Notification[] @relation("NotificationRecipient")
+  triggeredNotifications Notification[] @relation("NotificationActor")
+
+  @@index([handle])
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+  @@index([lastActiveAt])
+  @@index([location])
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// ============================================================================
+// INVITE SYSTEM
+// ============================================================================
+
+model InviteCode {
+  id          String    @id @default(cuid())
+  code        String    @unique
+
+  createdById String
+  createdBy   User      @relation("InviteCodeCreator", fields: [createdById], references: [id])
+
+  maxUses     Int       @default(1)
+  usesCount   Int       @default(0)
+  enabled     Boolean   @default(true)
+  expiresAt   DateTime?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  redemptions InviteRedemption[]
+
+  @@index([code])
+  @@index([createdById])
+  @@index([enabled])
+  @@index([expiresAt])
+}
+
+model InviteRedemption {
+  id           String   @id @default(cuid())
+
+  inviteCodeId String
+  inviteCode   InviteCode @relation(fields: [inviteCodeId], references: [id], onDelete: Cascade)
+
+  redeemedById String
+  redeemedBy   User     @relation(fields: [redeemedById], references: [id], onDelete: Cascade)
+
+  redeemedAt   DateTime @default(now())
+
+  @@index([inviteCodeId])
+  @@index([redeemedById])
+  @@index([redeemedAt])
+}
+
+// ============================================================================
+// SKILL & TOOL TAG SYSTEM
+// ============================================================================
+
+model SkillTag {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  category    String?
+
+  userSkills  UserSkill[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([name])
+  @@index([category])
+}
+
+model UserSkill {
+  id         String     @id @default(cuid())
+
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  skillTagId String
+  skillTag   SkillTag   @relation(fields: [skillTagId], references: [id], onDelete: Cascade)
+
+  level      SkillLevel @default(INTERMEDIATE)
+  featured   Boolean    @default(false)
+  yearsOfExp Int?
+
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@unique([userId, skillTagId])
+  @@index([userId])
+  @@index([skillTagId])
+  @@index([featured])
+}
+
+model ToolTag {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  category    String?
+
+  userTools   UserTool[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([name])
+  @@index([category])
+}
+
+model UserTool {
+  id        String    @id @default(cuid())
+
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  toolTagId String
+  toolTag   ToolTag   @relation(fields: [toolTagId], references: [id], onDelete: Cascade)
+
+  level     ToolLevel @default(INTERMEDIATE)
+  featured  Boolean   @default(false)
+  yearsOfExp Int?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([userId, toolTagId])
+  @@index([userId])
+  @@index([toolTagId])
+  @@index([featured])
+}
+
+// ============================================================================
+// PROFILE SECTIONS
+// ============================================================================
+
+model Link {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  label     String
+  url       String
+  order     Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  url         String?
+  imageUrl    String?
+
+  status      ProjectStatus @default(ACTIVE)
+  visibility  Visibility    @default(PUBLIC)
+
+  startDate   DateTime?
+  endDate     DateTime?
+
+  order       Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([visibility])
+  @@index([createdAt(sort: Desc)])
+}
+
+model Qualification {
+  id                 String              @id @default(cuid())
+  userId             String
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title              String
+  institution        String?
+  year               String?
+  description        String?
+
+  visibility         Visibility          @default(PUBLIC)
+  verificationStatus VerificationStatus? @default(UNVERIFIED)
+
+  order              Int                 @default(0)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@index([userId])
+  @@index([visibility])
+  @@index([verificationStatus])
+}
+
+// ============================================================================
+// SOCIAL GRAPH
+// ============================================================================
+
+model Follow {
+  id          String   @id @default(cuid())
+
+  followerId  String
+  follower    User     @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+
+  followingId String
+  following   User     @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@index([createdAt(sort: Desc)])
+}
+
+model Vouch {
+  id          String   @id @default(cuid())
+
+  candidateId String
+  candidate   User     @relation("Candidate", fields: [candidateId], references: [id], onDelete: Cascade)
+
+  voucherId   String
+  voucher     User     @relation("Voucher", fields: [voucherId], references: [id], onDelete: Cascade)
+
+  message     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([candidateId, voucherId])
+  @@index([candidateId])
+  @@index([voucherId])
+  @@index([createdAt(sort: Desc)])
+}
+
+// ============================================================================
+// MODERATION
+// ============================================================================
+
+model Report {
+  id          String       @id @default(cuid())
+
+  reporterId  String
+  reporter    User         @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  reportedId  String
+  reported    User         @relation("Reported", fields: [reportedId], references: [id], onDelete: Cascade)
+
+  reason      ReportReason
+  description String?
+
+  status      ReportStatus @default(PENDING)
+
+  resolvedAt  DateTime?
+  resolvedBy  String?      // Admin/Moderator ID who resolved
+  resolution  String?
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([reporterId])
+  @@index([reportedId])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+}
+
+// ============================================================================
+// NOTIFICATIONS (V2 - Scaffold only, no UI yet)
+// ============================================================================
+
+model Notification {
+  id         String           @id @default(cuid())
+
+  userId     String
+  user       User             @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+
+  type       NotificationType
+  actorId    String?
+  actor      User?            @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade)
+
+  entityType String?          // "project", "qualification", "vouch", etc.
+  entityId   String?          // ID of related entity
+
+  message    String
+  read       Boolean          @default(false)
+
+  createdAt  DateTime         @default(now())
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt(sort: Desc)])
+}
