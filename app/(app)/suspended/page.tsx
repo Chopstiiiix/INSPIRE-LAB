@@ -31,7 +31,7 @@ export default async function SuspendedPage() {
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
-      <Card className="max-w-md w-full bg-zinc-900 border-red-900">
+      <Card className="max-w-md w-full bg-black border-red-900">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-red-900/20 flex items-center justify-center">
             <AlertCircle className="h-6 w-6 text-red-500" />
@@ -42,7 +42,7 @@ export default async function SuspendedPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-zinc-800 p-4 rounded-lg">
+          <div className="bg-neutral-900 p-4 rounded-lg">
             <p className="text-sm text-gray-300">
               Your account has been suspended due to a violation of our community guidelines or terms of service.
               While suspended, you cannot:
@@ -54,7 +54,7 @@ export default async function SuspendedPage() {
             </ul>
           </div>
 
-          <div className="bg-zinc-800 p-4 rounded-lg">
+          <div className="bg-neutral-900 p-4 rounded-lg">
             <p className="text-sm font-medium text-white mb-2">What you can do:</p>
             <p className="text-sm text-gray-400">
               If you believe this suspension was made in error, please contact our support team

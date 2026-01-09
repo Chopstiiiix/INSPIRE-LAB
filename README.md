@@ -26,6 +26,8 @@ A production-grade, invite-only professional networking platform built with Next
 - **React Hook Form** for forms
 - **UploadThing** for file uploads
 - **Server Actions** for mutations
+- **Matrix Synapse** for E2EE chat
+- **LiveKit** for video calls
 
 ## Prerequisites
 

@@ -180,13 +180,13 @@ export function DirectoryFeed({ skillTags, toolTags }: DirectoryFeedProps) {
               placeholder="Search by name, handle, role, or skills..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 bg-zinc-900 border-zinc-800 text-white"
+              className="pl-10 bg-black border-neutral-800 text-white"
             />
           </div>
           <Button
             variant={showFilters ? "default" : "outline"}
             onClick={() => setShowFilters(!showFilters)}
-            className="border-zinc-800"
+            className="border-neutral-800"
           >
             <Filter className="h-4 w-4 mr-2" />
             Filters
@@ -203,7 +203,7 @@ export function DirectoryFeed({ skillTags, toolTags }: DirectoryFeedProps) {
             )}
           </Button>
           <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-            <SelectTrigger className="w-[180px] bg-zinc-900 border-zinc-800 text-white">
+            <SelectTrigger className="w-[180px] bg-black border-neutral-800 text-white">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -216,7 +216,7 @@ export function DirectoryFeed({ skillTags, toolTags }: DirectoryFeedProps) {
 
         {/* Filters Panel */}
         {showFilters && (
-          <Card className="p-4 bg-zinc-900 border-zinc-800 space-y-4">
+          <Card className="p-4 bg-black border-neutral-800 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-white">Filters</h3>
               {hasActiveFilters && (
@@ -234,7 +234,7 @@ export function DirectoryFeed({ skillTags, toolTags }: DirectoryFeedProps) {
                 placeholder="Filter by location..."
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white"
+                className="bg-neutral-900 border-neutral-700 text-white"
               />
             </div>
 
@@ -245,7 +245,7 @@ export function DirectoryFeed({ skillTags, toolTags }: DirectoryFeedProps) {
                 id="hasActiveProject"
                 checked={hasActiveProject}
                 onChange={(e) => setHasActiveProject(e.target.checked)}
-                className="rounded border-zinc-700"
+                className="rounded border-neutral-700"
               />
               <label htmlFor="hasActiveProject" className="text-sm text-gray-300 cursor-pointer">
                 Has active projects
@@ -258,8 +258,9 @@ export function DirectoryFeed({ skillTags, toolTags }: DirectoryFeedProps) {
               <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
                 {Object.entries(
                   skillTags.reduce((acc, tag) => {
-                    if (!acc[tag.category]) acc[tag.category] = [];
-                    acc[tag.category].push(tag);
+                    const category = tag.category || "Uncategorized";
+                    if (!acc[category]) acc[category] = [];
+                    acc[category].push(tag);
                     return acc;
                   }, {} as Record<string, SkillTag[]>)
                 ).map(([category, tags]) => (
@@ -273,7 +274,7 @@ export function DirectoryFeed({ skillTags, toolTags }: DirectoryFeedProps) {
                           className={`px-2 py-1 text-xs rounded border transition-colors ${
                             selectedSkillIds.includes(tag.id)
                               ? "bg-primary text-primary-foreground border-primary"
-                              : "bg-zinc-800 text-gray-300 border-zinc-700 hover:bg-zinc-700"
+                              : "bg-neutral-900 text-gray-300 border-neutral-700 hover:bg-neutral-800"
                           }`}
                         >
                           {tag.name}
@@ -291,8 +292,9 @@ export function DirectoryFeed({ skillTags, toolTags }: DirectoryFeedProps) {
               <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
                 {Object.entries(
                   toolTags.reduce((acc, tag) => {
-                    if (!acc[tag.category]) acc[tag.category] = [];
-                    acc[tag.category].push(tag);
+                    const category = tag.category || "Uncategorized";
+                    if (!acc[category]) acc[category] = [];
+                    acc[category].push(tag);
                     return acc;
                   }, {} as Record<string, ToolTag[]>)
                 ).map(([category, tags]) => (
@@ -306,7 +308,7 @@ export function DirectoryFeed({ skillTags, toolTags }: DirectoryFeedProps) {
                           className={`px-2 py-1 text-xs rounded border transition-colors ${
                             selectedToolIds.includes(tag.id)
                               ? "bg-primary text-primary-foreground border-primary"
-                              : "bg-zinc-800 text-gray-300 border-zinc-700 hover:bg-zinc-700"
+                              : "bg-neutral-900 text-gray-300 border-neutral-700 hover:bg-neutral-800"
                           }`}
                         >
                           {tag.name}
@@ -336,14 +338,14 @@ export function DirectoryFeed({ skillTags, toolTags }: DirectoryFeedProps) {
             {tiles.map((tile) => (
               <Card
                 key={tile.id}
-                className="p-4 bg-zinc-900 border-white hover:border-zinc-500 transition-colors"
+                className="p-4 bg-black border-white hover:border-neutral-500 transition-colors"
               >
                 <div className="flex flex-col gap-3">
                   {/* Avatar and Name */}
                   <div className="flex items-start gap-3">
                     <Link href={`/u/${tile.handle}`}>
-                      <Avatar className="h-12 w-12 border border-zinc-700">
-                        <AvatarFallback className="bg-zinc-800 text-white">
+                      <Avatar className="h-12 w-12 border border-neutral-700">
+                        <AvatarFallback className="bg-neutral-900 text-white">
                           {tile.name?.charAt(0) || "?"}
                         </AvatarFallback>
                       </Avatar>
@@ -380,7 +382,7 @@ export function DirectoryFeed({ skillTags, toolTags }: DirectoryFeedProps) {
                           <Badge
                             key={skill.id}
                             variant="secondary"
-                            className="text-xs bg-zinc-800 text-gray-300"
+                            className="text-xs bg-neutral-900 text-gray-300"
                           >
                             {skill.name}
                           </Badge>
@@ -396,7 +398,7 @@ export function DirectoryFeed({ skillTags, toolTags }: DirectoryFeedProps) {
                         <Badge
                           key={tool.id}
                           variant="outline"
-                          className="text-xs border-zinc-700 text-gray-400"
+                          className="text-xs border-neutral-700 text-gray-400"
                         >
                           {tool.name}
                         </Badge>

@@ -1,0 +1,31 @@
+{
+    "default_server_config": {
+        "m.homeserver": {
+            "base_url": "http://synapse:8008",
+            "server_name": "localhost"
+        }
+    },
+    "brand": "Kudo Chat (Debug)",
+    "integrations_ui_url": "",
+    "integrations_rest_url": "",
+    "integrations_widgets_urls": [],
+    "bug_report_endpoint_url": "",
+    "show_labs_settings": true,
+    "features": {
+        "feature_spotlight": true
+    },
+    "default_theme": "dark",
+    "room_directory": {
+        "servers": []
+    },
+    "enable_presence_by_hs_url": {
+        "http://synapse:8008": true
+    },
+    "setting_defaults": {
+        "breadcrumbs": true
+    },
+    "disable_custom_urls": true,
+    "disable_guests": true,
+    "disable_login_language_selector": true,
+    "disable_3pid_login": true
+}

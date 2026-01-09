@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
+import { MessageSquare } from "lucide-react";
 
 export function Header() {
   const { data: session } = useSession();
@@ -32,6 +33,10 @@ export function Header() {
             <>
               <Link href="/app" className="text-white hover:underline">
                 Directory
+              </Link>
+              <Link href="/messages" className="text-white hover:underline flex items-center gap-1">
+                <MessageSquare className="h-4 w-4" />
+                Messages
               </Link>
               {isAdmin && (
                 <Link href="/app/admin/reports" className="text-white hover:underline">

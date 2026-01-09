@@ -1,0 +1,154 @@
+# =============================================================================
+# LiveKit Server Configuration
+# =============================================================================
+# Documentation: https://docs.livekit.io/realtime/self-hosting/deployment/
+#
+# API keys are loaded from environment variables:
+#   LIVEKIT_API_KEY, LIVEKIT_API_SECRET
+# =============================================================================
+
+# HTTP port for API and WebSocket connections
+port: 7880
+
+# Bind to all interfaces
+bind_addresses:
+  - "0.0.0.0"
+
+# =============================================================================
+# RTC (Real-Time Communication) Configuration
+# =============================================================================
+rtc:
+  # Port range for WebRTC media (UDP)
+  port_range_start: 50000
+  port_range_end: 50100
+
+  # TCP fallback port (when UDP is blocked)
+  tcp_port: 7881
+
+  # Use external IP for SDP offers
+  # Set to true when running behind NAT
+  use_external_ip: true
+
+  # STUN servers for determining external IP
+  stun_servers:
+    - stun.l.google.com:19302
+    - stun1.l.google.com:19302
+
+  # Uncomment and set for production (your server's public IP)
+  # node_ip: "YOUR_PUBLIC_IP"
+
+  # UDP mux for reduced port usage
+  udp_port: 7882
+  use_ice_lite: true
+
+# =============================================================================
+# TURN Server Configuration
+# =============================================================================
+# Connects to the coturn container
+turn:
+  enabled: true
+  domain: localhost  # Change to your TURN domain in production
+  # TLS port (if using TLS)
+  tls_port: 5349
+  # UDP/TCP port
+  udp_port: 3478
+  tcp_port: 3478
+  # Shared secret for TURN authentication (must match coturn config)
+  # credential_type: static
+  # static_auth_secret: your_turn_secret_here
+
+# =============================================================================
+# Room Configuration
+# =============================================================================
+room:
+  # Auto-create rooms when participants join
+  auto_create: true
+
+  # Maximum participants per room
+  max_participants: 50
+
+  # Empty room timeout (seconds) - room deleted after this
+  empty_timeout: 300
+
+  # Departure timeout (seconds) - how long to wait before marking participant as departed
+  departure_timeout: 20
+
+  # Enable adaptive streaming
+  enable_remote_unmute: false
+
+# =============================================================================
+# Audio Configuration
+# =============================================================================
+audio:
+  # Active speaker detection
+  active_speaker_update_interval: 500ms
+
+  # Bytes per sample
+  bytes_per_sample: 2
+
+# =============================================================================
+# Video Configuration
+# =============================================================================
+video:
+  # Dynacast for bandwidth optimization
+  dynacast: true
+
+  # Default codec (VP8 is most compatible)
+  default_codec: VP8
+
+# =============================================================================
+# Logging
+# =============================================================================
+logging:
+  level: info
+  # Enable JSON logging for production
+  json: false
+  # Sample rate for RTC stats (0 = disabled)
+  sample: 0
+
+# =============================================================================
+# Redis Configuration (for multi-node deployments)
+# =============================================================================
+redis:
+  address: redis:6379
+  # Uncomment for production
+  # password: your_redis_password
+  # db: 0
+
+# =============================================================================
+# Keys Configuration
+# =============================================================================
+# API keys loaded from environment variables
+# Format: key_id: secret
+# keys:
+#   APIxxxxxxxxx: secret_here
+
+# Enable key file (alternative to environment variables)
+# key_file: /etc/livekit/keys.yaml
+
+# =============================================================================
+# Webhooks (Optional)
+# =============================================================================
+# webhook:
+#   urls:
+#     - https://your-app.com/api/livekit/webhook
+#   api_key: your_webhook_api_key
+
+# =============================================================================
+# Limits
+# =============================================================================
+limit:
+  # Max tracks per participant
+  num_tracks: 50
+
+  # Bandwidth limit per participant (bytes/sec)
+  bytes_per_sec: 10000000  # 10 MB/s
+
+  # Subscription limits
+  subscription_limit_video: 10
+  subscription_limit_audio: 50
+
+# =============================================================================
+# Region (for geo-routing in multi-region setups)
+# =============================================================================
+# region: us-west-2

@@ -43,13 +43,13 @@ type OnboardingForm = z.infer<typeof onboardingSchema>;
 interface SkillTag {
   id: string;
   name: string;
-  category: string;
+  category: string | null;
 }
 
 interface ToolTag {
   id: string;
   name: string;
-  category: string;
+  category: string | null;
 }
 
 interface User {
@@ -101,18 +101,20 @@ export function OnboardingFormClient({
 
   // Group tags by category
   const groupedSkills = skillTags.reduce((acc, skill) => {
-    if (!acc[skill.category]) {
-      acc[skill.category] = [];
+    const category = skill.category || "Uncategorized";
+    if (!acc[category]) {
+      acc[category] = [];
     }
-    acc[skill.category].push(skill);
+    acc[category].push(skill);
     return acc;
   }, {} as Record<string, SkillTag[]>);
 
   const groupedTools = toolTags.reduce((acc, tool) => {
-    if (!acc[tool.category]) {
-      acc[tool.category] = [];
+    const category = tool.category || "Uncategorized";
+    if (!acc[category]) {
+      acc[category] = [];
     }
-    acc[tool.category].push(tool);
+    acc[category].push(tool);
     return acc;
   }, {} as Record<string, ToolTag[]>);
 

@@ -41,7 +41,7 @@ export async function getUserProfile(handle: string, viewerUserId?: string) {
           orderBy: { createdAt: "desc" },
         },
         qualifications: {
-          orderBy: { issuedAt: "desc" },
+          orderBy: { createdAt: "desc" },
         },
         _count: {
           select: {
@@ -74,8 +74,8 @@ export async function getUserProfile(handle: string, viewerUserId?: string) {
     const filteredProjects = user.projects.filter((project) => {
       if (viewerUserId === user.id) return true; // Owner sees all
       if (project.visibility === "PUBLIC") return true;
-      if (project.visibility === "MEMBERS" && viewerUserId) return true;
-      if (project.visibility === "FOLLOWERS" && isFollowing) return true;
+      if (project.visibility === "CONNECTIONS_ONLY" && isFollowing) return true;
+      // PRIVATE is only visible to owner (handled above)
       return false;
     });
 
@@ -83,18 +83,34 @@ export async function getUserProfile(handle: string, viewerUserId?: string) {
     const filteredQualifications = user.qualifications.filter((qual) => {
       if (viewerUserId === user.id) return true; // Owner sees all
       if (qual.visibility === "PUBLIC") return true;
-      if (qual.visibility === "MEMBERS" && viewerUserId) return true;
-      if (qual.visibility === "FOLLOWERS" && isFollowing) return true;
+      if (qual.visibility === "CONNECTIONS_ONLY" && isFollowing) return true;
+      // PRIVATE is only visible to owner (handled above)
       return false;
     });
 
+    // Create the full user object preserving all properties
+    const fullUser = {
+      id: user.id,
+      name: user.name,
+      handle: user.handle,
+      email: user.email,
+      roleTitle: user.roleTitle,
+      bio: user.bio,
+      location: user.location,
+      website: user.website,
+      avatar: user.avatar,
+      createdAt: user.createdAt,
+      userSkills: user.userSkills,
+      userTools: user.userTools,
+      links: user.links,
+      projects: filteredProjects,
+      qualifications: filteredQualifications,
+      _count: user._count,
+    };
+
     return {
       success: true,
-      user: {
-        ...user,
-        projects: filteredProjects,
-        qualifications: filteredQualifications,
-      },
+      user: fullUser,
       isFollowing,
       isOwner: viewerUserId === user.id,
     };
@@ -356,7 +372,8 @@ const projectSchema = z.object({
   description: z.string().max(2000).optional(),
   url: z.string().url().optional().or(z.literal("")),
   status: z.enum(["ACTIVE", "PAUSED", "COMPLETED"]).default("ACTIVE"),
-  visibility: z.enum(["PUBLIC", "MEMBERS", "FOLLOWERS"]).default("PUBLIC"),
+  visibility: z.enum(["PUBLIC", "PRIVATE", "CONNECTIONS_ONLY"]).default("PUBLIC"),
+  initializeChat: z.boolean().optional(), // Optionally create Matrix room immediately
 });
 
 export async function createProject(data: z.infer<typeof projectSchema>) {
@@ -378,6 +395,17 @@ export async function createProject(data: z.infer<typeof projectSchema>) {
         visibility: validated.visibility,
       },
     });
+
+    // Optionally initialize Matrix room for the project
+    if (validated.initializeChat) {
+      try {
+        const { ensureProjectRoom } = await import("@/server/chatProvisioning");
+        await ensureProjectRoom(project.id, session.user.id);
+      } catch (chatError) {
+        console.error("[CreateProject] Chat initialization failed:", chatError);
+        // Don't fail project creation
+      }
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -405,6 +433,16 @@ export async function updateProject(projectId: string, data: z.infer<typeof proj
 
     const validated = projectSchema.parse(data);
 
+    // Get existing project to compare
+    const existingProject = await prisma.project.findUnique({
+      where: { id: projectId, userId: session.user.id },
+      select: { title: true, description: true, matrixRoomId: true },
+    });
+
+    if (!existingProject) {
+      return { error: "Project not found" };
+    }
+
     const project = await prisma.project.update({
       where: {
         id: projectId,
@@ -418,6 +456,29 @@ export async function updateProject(projectId: string, data: z.infer<typeof proj
         visibility: validated.visibility,
       },
     });
+
+    // Update Matrix room details if room exists and title/description changed
+    if (existingProject.matrixRoomId) {
+      const titleChanged = existingProject.title !== validated.title;
+      const descChanged = existingProject.description !== validated.description;
+
+      if (titleChanged || descChanged) {
+        try {
+          const { updateProjectRoomDetails } = await import("@/server/chatProvisioning");
+          await updateProjectRoomDetails(
+            projectId,
+            {
+              name: titleChanged ? validated.title : undefined,
+              topic: descChanged ? (validated.description || "") : undefined,
+            },
+            session.user.id
+          );
+        } catch (chatError) {
+          console.error("[UpdateProject] Chat update failed:", chatError);
+          // Don't fail project update
+        }
+      }
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -471,7 +532,7 @@ const qualificationSchema = z.object({
   institution: z.string().max(200).optional(),
   year: z.string().max(50).optional(),
   description: z.string().max(2000).optional(),
-  visibility: z.enum(["PUBLIC", "MEMBERS", "FOLLOWERS"]).default("PUBLIC"),
+  visibility: z.enum(["PUBLIC", "PRIVATE", "CONNECTIONS_ONLY"]).default("PUBLIC"),
 });
 
 export async function createQualification(data: z.infer<typeof qualificationSchema>) {
@@ -605,5 +666,153 @@ export async function getAllToolTags() {
   } catch (error) {
     console.error("Get tool tags error:", error);
     return { error: "Failed to load tool tags", tags: [] };
+  }
+}
+
+// ==================== LINKS ====================
+
+const linkSchema = z.object({
+  label: z.string().min(1).max(50),
+  url: z.string().url(),
+});
+
+export async function addLink(data: z.infer<typeof linkSchema>) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { error: "Unauthorized" };
+    }
+
+    const validated = linkSchema.parse(data);
+
+    // Get the highest order to add new link at the end
+    const lastLink = await prisma.link.findFirst({
+      where: { userId: session.user.id },
+      orderBy: { order: "desc" },
+    });
+
+    const link = await prisma.link.create({
+      data: {
+        userId: session.user.id,
+        label: validated.label,
+        url: validated.url,
+        order: (lastLink?.order ?? -1) + 1,
+      },
+    });
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { handle: true },
+    });
+    revalidatePath(`/u/${user?.handle}`);
+    revalidatePath("/me/settings");
+
+    return { success: true, link };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.issues[0].message };
+    }
+    console.error("Add link error:", error);
+    return { error: "Failed to add link" };
+  }
+}
+
+export async function deleteLink(linkId: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { error: "Unauthorized" };
+    }
+
+    await prisma.link.delete({
+      where: {
+        id: linkId,
+        userId: session.user.id,
+      },
+    });
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { handle: true },
+    });
+    revalidatePath(`/u/${user?.handle}`);
+    revalidatePath("/me/settings");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Delete link error:", error);
+    return { error: "Failed to delete link" };
+  }
+}
+
+// ==================== UPDATE PROFILE ====================
+
+const updateProfileSchema = z.object({
+  name: z.string().min(1).max(100),
+  handle: z
+    .string()
+    .min(3)
+    .max(30)
+    .regex(/^[a-zA-Z0-9_-]+$/),
+  roleTitle: z.string().max(100).optional(),
+  bio: z.string().max(500).optional(),
+  location: z.string().max(100).optional(),
+  avatar: z.string().url().optional().or(z.literal("")),
+});
+
+export async function updateProfile(data: z.infer<typeof updateProfileSchema>) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { error: "Unauthorized" };
+    }
+
+    const validated = updateProfileSchema.parse(data);
+
+    // Check if handle is taken by another user
+    if (validated.handle) {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          handle: validated.handle,
+          id: { not: session.user.id },
+        },
+      });
+
+      if (existingUser) {
+        return { error: "Handle is already taken" };
+      }
+    }
+
+    const oldUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { handle: true },
+    });
+
+    const user = await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        name: validated.name,
+        handle: validated.handle,
+        roleTitle: validated.roleTitle || null,
+        bio: validated.bio || null,
+        location: validated.location || null,
+        avatar: validated.avatar || null,
+      },
+    });
+
+    // Revalidate both old and new handle paths
+    if (oldUser?.handle) {
+      revalidatePath(`/u/${oldUser.handle}`);
+    }
+    revalidatePath(`/u/${user.handle}`);
+    revalidatePath("/me/settings");
+
+    return { success: true, user };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.issues[0].message };
+    }
+    console.error("Update profile error:", error);
+    return { error: "Failed to update profile" };
   }
 }

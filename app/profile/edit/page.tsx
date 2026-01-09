@@ -13,9 +13,9 @@ async function getCurrentUserProfile() {
     where: { id: session.user.id },
     include: {
       links: { orderBy: { order: "asc" } },
-      skills: { orderBy: { order: "asc" } },
-      tools: { orderBy: { order: "asc" } },
-      projects: { orderBy: { order: "asc" } },
+      userSkills: { include: { skillTag: true }, orderBy: { createdAt: "desc" } },
+      userTools: { include: { toolTag: true }, orderBy: { createdAt: "desc" } },
+      projects: { orderBy: { createdAt: "desc" } },
       qualifications: { orderBy: { order: "asc" } },
     },
   });

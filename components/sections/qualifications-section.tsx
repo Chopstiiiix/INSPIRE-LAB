@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { qualificationSchema } from "@/lib/validations";
-import { addQualification, deleteQualification } from "@/app/actions/profile";
+import { createQualification, deleteQualification } from "@/app/actions/profile";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -30,7 +30,7 @@ export function QualificationsSection({ qualifications }: { qualifications: any[
 
   const onSubmit = async (data: QualificationForm) => {
     setError(null);
-    const result = await addQualification(data);
+    const result = await createQualification({ ...data, visibility: "PUBLIC" });
 
     if (result.error) {
       setError(result.error);

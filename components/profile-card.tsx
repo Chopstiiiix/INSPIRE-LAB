@@ -19,7 +19,7 @@ interface ProfileCardProps {
 
 export function ProfileCard({ user }: ProfileCardProps) {
   return (
-    <Link href={`/${user.handle}`}>
+    <Link href={`/u/${user.handle}`}>
       <div className="border border-white p-6 hover:bg-white hover:text-black transition-colors h-full flex flex-col">
         <div className="flex items-start gap-4 mb-4">
           {user.avatar ? (

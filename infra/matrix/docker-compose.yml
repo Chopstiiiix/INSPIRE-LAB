@@ -1,0 +1,96 @@
+version: "3.8"
+
+# =============================================================================
+# Matrix Synapse Infrastructure
+# =============================================================================
+# Includes:
+# - Synapse homeserver
+# - PostgreSQL database
+# - Element Web (optional, for admin debugging)
+#
+# Usage:
+#   1. Copy ../env.example to ../.env and configure
+#   2. Generate Synapse config: see README.md
+#   3. docker-compose up -d
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Synapse Homeserver
+  # ---------------------------------------------------------------------------
+  synapse:
+    image: matrixdotorg/synapse:latest
+    container_name: kudo-synapse
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - synapse-data:/data
+      - ./homeserver.yaml:/data/homeserver.yaml:ro
+      - ./log.config:/data/log.config:ro
+    environment:
+      SYNAPSE_CONFIG_PATH: /data/homeserver.yaml
+    ports:
+      - "8008:8008"   # Client-Server API
+      - "8448:8448"   # Server-Server Federation (optional)
+    healthcheck:
+      test: ["CMD", "curl", "-fSs", "http://localhost:8008/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - matrix-network
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: kudo-matrix-postgres
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: synapse
+      POSTGRES_PASSWORD: ${MATRIX_DB_PASSWORD}
+      POSTGRES_DB: synapse
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U synapse -d synapse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - matrix-network
+
+  # ---------------------------------------------------------------------------
+  # Element Web (Optional - for admin debugging)
+  # ---------------------------------------------------------------------------
+  # Uncomment this service if you want a web client for testing
+  # Access at http://localhost:8080
+  element-web:
+    image: vectorim/element-web:latest
+    container_name: kudo-element-web
+    restart: unless-stopped
+    profiles:
+      - debug  # Only starts with: docker-compose --profile debug up
+    volumes:
+      - ./element-config.json:/app/config.json:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - synapse
+    networks:
+      - matrix-network
+
+volumes:
+  synapse-data:
+    name: kudo-synapse-data
+  postgres-data:
+    name: kudo-matrix-postgres-data
+
+networks:
+  matrix-network:
+    name: kudo-matrix-network

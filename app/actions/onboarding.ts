@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
+import { provisionMatrixUser } from "@/lib/matrix/provisioning";
 
 const onboardingSchema = z.object({
   handle: z
@@ -20,7 +21,7 @@ const onboardingSchema = z.object({
     label: z.string().min(1).max(50),
     url: z.string().url(),
   })).optional(),
-  skillIds: z.array(z.string()).min(3, "Select at least 3 skills"),
+  skillIds: z.array(z.string()).default([]),
   toolIds: z.array(z.string()).optional(),
 });
 
@@ -99,6 +100,18 @@ export async function completeOnboarding(
 
       return updatedUser;
     });
+
+    // Provision Matrix user for chat (non-blocking, log errors but don't fail onboarding)
+    try {
+      await provisionMatrixUser(
+        user.id,
+        validated.handle,
+        validated.roleTitle || validated.handle
+      );
+    } catch (matrixError) {
+      // Log but don't fail onboarding - Matrix can be provisioned later
+      console.error("[Onboarding] Matrix provisioning failed:", matrixError);
+    }
 
     revalidatePath("/app/discover");
     revalidatePath("/onboarding");

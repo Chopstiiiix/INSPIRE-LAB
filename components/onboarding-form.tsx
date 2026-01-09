@@ -52,7 +52,7 @@ export function OnboardingForm({ user }: OnboardingFormProps) {
     setError(null);
     setIsLoading(true);
 
-    const result = await completeOnboarding(data);
+    const result = await completeOnboarding({ ...data, skillIds: [] });
 
     if (result.error) {
       setError(result.error);

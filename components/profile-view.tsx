@@ -27,6 +27,7 @@ import { Label } from "@/components/ui/label";
 import { MapPin, Globe, Calendar, Star, ExternalLink, Loader2, Flag } from "lucide-react";
 import { toggleFollow } from "@/app/actions/feed";
 import { createReport } from "@/app/actions/reports";
+import { MessageButton } from "@/components/chat/message-button";
 
 interface User {
   id: string;
@@ -47,7 +48,7 @@ interface User {
     skillTag: {
       id: string;
       name: string;
-      category: string;
+      category: string | null;
     };
   }>;
   userTools: Array<{
@@ -58,7 +59,7 @@ interface User {
     toolTag: {
       id: string;
       name: string;
-      category: string;
+      category: string | null;
     };
   }>;
   links: Array<{
@@ -186,6 +187,7 @@ export function ProfileView({ user, isOwner, isFollowing }: ProfileViewProps) {
                   "Follow"
                 )}
               </Button>
+              <MessageButton userId={user.id} userName={user.name} />
               <Button
                 variant="ghost"
                 size="icon"
@@ -368,7 +370,7 @@ export function ProfileView({ user, isOwner, isFollowing }: ProfileViewProps) {
             <div className="space-y-4">
               {Object.entries(
                 user.userSkills.reduce((acc, userSkill) => {
-                  const category = userSkill.skillTag.category;
+                  const category = userSkill.skillTag.category || "Uncategorized";
                   if (!acc[category]) acc[category] = [];
                   acc[category].push(userSkill);
                   return acc;
@@ -414,7 +416,7 @@ export function ProfileView({ user, isOwner, isFollowing }: ProfileViewProps) {
             <div className="space-y-4">
               {Object.entries(
                 user.userTools.reduce((acc, userTool) => {
-                  const category = userTool.toolTag.category;
+                  const category = userTool.toolTag.category || "Uncategorized";
                   if (!acc[category]) acc[category] = [];
                   acc[category].push(userTool);
                   return acc;

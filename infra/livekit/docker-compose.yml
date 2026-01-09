@@ -1,0 +1,93 @@
+version: "3.8"
+
+# =============================================================================
+# LiveKit Video Infrastructure
+# =============================================================================
+# Includes:
+# - LiveKit SFU server
+# - Coturn TURN/STUN server for NAT traversal
+# - Redis (for multi-node deployments)
+#
+# Usage:
+#   1. Copy ../env.example to ../.env and configure
+#   2. Update config.yaml with your settings
+#   3. docker-compose up -d
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # LiveKit SFU Server
+  # ---------------------------------------------------------------------------
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: kudo-livekit
+    restart: unless-stopped
+    command: --config /etc/livekit.yaml
+    volumes:
+      - ./config.yaml:/etc/livekit.yaml:ro
+    ports:
+      - "7880:7880"       # HTTP API / WebSocket
+      - "7881:7881"       # RTC over TCP
+      - "7882:7882/udp"   # RTC over UDP
+      - "50000-50100:50000-50100/udp"  # WebRTC media ports
+    environment:
+      - LIVEKIT_API_KEY=${LIVEKIT_API_KEY}
+      - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:7880"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - livekit-network
+
+  # ---------------------------------------------------------------------------
+  # Redis (for multi-node coordination)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: kudo-livekit-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - livekit-network
+
+  # ---------------------------------------------------------------------------
+  # Coturn TURN/STUN Server
+  # ---------------------------------------------------------------------------
+  # Required for NAT traversal when peers can't connect directly
+  coturn:
+    image: coturn/coturn:latest
+    container_name: kudo-coturn
+    restart: unless-stopped
+    volumes:
+      - ./turnserver.conf:/etc/coturn/turnserver.conf:ro
+    ports:
+      - "3478:3478"         # STUN/TURN UDP
+      - "3478:3478/udp"     # STUN/TURN UDP
+      - "5349:5349"         # STUN/TURN TLS
+      - "5349:5349/udp"     # STUN/TURN TLS UDP
+      - "49152-49252:49152-49252/udp"  # Relay ports
+    environment:
+      - TURN_SECRET=${TURN_SECRET}
+      - TURN_REALM=${TURN_DOMAIN:-localhost}
+    networks:
+      - livekit-network
+
+volumes:
+  redis-data:
+    name: kudo-livekit-redis-data
+
+networks:
+  livekit-network:
+    name: kudo-livekit-network

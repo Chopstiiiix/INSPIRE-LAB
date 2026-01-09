@@ -156,7 +156,7 @@ export function AdminReportsView({ initialReports, nextCursor, hasMore }: AdminR
       ) : (
         <div className="space-y-4">
           {reports.map((report) => (
-            <Card key={report.id} className="bg-zinc-900 border-zinc-800">
+            <Card key={report.id} className="bg-black border-neutral-800">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -181,7 +181,7 @@ export function AdminReportsView({ initialReports, nextCursor, hasMore }: AdminR
                   <p className="text-xs text-muted-foreground mb-2">Reported by</p>
                   <Link href={`/u/${report.reporter.handle}`} className="flex items-center gap-2 hover:underline">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-zinc-800 text-white text-xs">
+                      <AvatarFallback className="bg-neutral-900 text-white text-xs">
                         {report.reporter.name?.charAt(0) || "?"}
                       </AvatarFallback>
                     </Avatar>
@@ -197,7 +197,7 @@ export function AdminReportsView({ initialReports, nextCursor, hasMore }: AdminR
                   <p className="text-xs text-muted-foreground mb-2">Reported user</p>
                   <Link href={`/u/${report.reported.handle}`} className="flex items-center gap-2 hover:underline">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-zinc-800 text-white text-xs">
+                      <AvatarFallback className="bg-neutral-900 text-white text-xs">
                         {report.reported.name?.charAt(0) || "?"}
                       </AvatarFallback>
                     </Avatar>
@@ -217,7 +217,7 @@ export function AdminReportsView({ initialReports, nextCursor, hasMore }: AdminR
                 {report.description && (
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Details</p>
-                    <p className="text-sm bg-zinc-800 p-3 rounded">{report.description}</p>
+                    <p className="text-sm bg-neutral-900 p-3 rounded">{report.description}</p>
                   </div>
                 )}
 
@@ -225,7 +225,7 @@ export function AdminReportsView({ initialReports, nextCursor, hasMore }: AdminR
                 {report.resolution && (
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Resolution</p>
-                    <p className="text-sm bg-zinc-800 p-3 rounded">{report.resolution}</p>
+                    <p className="text-sm bg-neutral-900 p-3 rounded">{report.resolution}</p>
                   </div>
                 )}
 

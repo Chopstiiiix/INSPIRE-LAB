@@ -337,14 +337,16 @@ export function ProfileSettings({ user, skillTags, toolTags }: ProfileSettingsPr
 
   // Group tags by category
   const groupedSkillTags = skillTags.reduce((acc, tag) => {
-    if (!acc[tag.category]) acc[tag.category] = [];
-    acc[tag.category].push(tag);
+    const category = tag.category || "Uncategorized";
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(tag);
     return acc;
   }, {} as Record<string, SkillTag[]>);
 
   const groupedToolTags = toolTags.reduce((acc, tag) => {
-    if (!acc[tag.category]) acc[tag.category] = [];
-    acc[tag.category].push(tag);
+    const category = tag.category || "Uncategorized";
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(tag);
     return acc;
   }, {} as Record<string, ToolTag[]>);
 
@@ -458,7 +460,7 @@ export function ProfileSettings({ user, skillTags, toolTags }: ProfileSettingsPr
             <div className="space-y-4">
               {Object.entries(
                 user.userSkills.reduce((acc, userSkill) => {
-                  const category = userSkill.skillTag.category;
+                  const category = userSkill.skillTag.category || "Uncategorized";
                   if (!acc[category]) acc[category] = [];
                   acc[category].push(userSkill);
                   return acc;
@@ -594,7 +596,7 @@ export function ProfileSettings({ user, skillTags, toolTags }: ProfileSettingsPr
             <div className="space-y-4">
               {Object.entries(
                 user.userTools.reduce((acc, userTool) => {
-                  const category = userTool.toolTag.category;
+                  const category = userTool.toolTag.category || "Uncategorized";
                   if (!acc[category]) acc[category] = [];
                   acc[category].push(userTool);
                   return acc;

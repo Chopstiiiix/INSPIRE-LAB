@@ -130,8 +130,8 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
       </div>
 
       <LinksSection links={user.links} />
-      <SkillsSection skills={user.skills} />
-      <ToolsSection tools={user.tools} />
+      <SkillsSection skills={user.userSkills} />
+      <ToolsSection tools={user.userTools} />
       <ProjectsSection projects={user.projects} />
       <QualificationsSection qualifications={user.qualifications} />
     </div>

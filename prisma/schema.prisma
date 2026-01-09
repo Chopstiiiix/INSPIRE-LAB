@@ -79,6 +79,15 @@ enum NotificationType {
   VOUCH
   PROJECT_UPDATE
   SYSTEM
+  MESSAGE
+  VIDEO_CALL
+}
+
+enum ProjectMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
 }
 
 // ============================================================================
@@ -97,6 +106,9 @@ model User {
   bio           String?
   location      String?
   website       String?
+
+  // Matrix integration (provisioned when user becomes ACTIVE)
+  matrixUserId  String?    @unique  // @handle:server format
 
   status        UserStatus @default(PENDING)
   role          UserRole   @default(USER)
@@ -139,6 +151,14 @@ model User {
   // Notifications
   notifications Notification[] @relation("NotificationRecipient")
   triggeredNotifications Notification[] @relation("NotificationActor")
+
+  // Project memberships (collaborative projects)
+  projectMemberships ProjectMembership[]
+
+  // Matrix chat credentials
+  matrixCredentials UserMatrixCredentials?
+  matrixRoomsAsUserA MatrixRoom[] @relation("MatrixRoomUserA")
+  matrixRoomsAsUserB MatrixRoom[] @relation("MatrixRoomUserB")
 
   @@index([handle])
   @@index([email])
@@ -344,6 +364,9 @@ model Project {
   url         String?
   imageUrl    String?
 
+  // Matrix chat room (provisioned on first access)
+  matrixRoomId String?      @unique  // !roomid:server format
+
   status      ProjectStatus @default(ACTIVE)
   visibility  Visibility    @default(PUBLIC)
 
@@ -353,6 +376,12 @@ model Project {
   order       Int           @default(0)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+
+  // Collaborative project members
+  members     ProjectMembership[]
+
+  // Project Matrix chat room (legacy relation, use matrixRoomId directly)
+  matrixRoom  MatrixRoom?
 
   @@index([userId])
   @@index([status])
@@ -477,5 +506,113 @@ model Notification {
 
   @@index([userId])
   @@index([read])
+  @@index([createdAt(sort: Desc)])
+}
+
+// ============================================================================
+// PRIVATE COMMUNICATIONS (Matrix + LiveKit)
+// ============================================================================
+
+model ProjectMembership {
+  id        String            @id @default(cuid())
+
+  projectId String
+  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role      ProjectMemberRole @default(MEMBER)
+  joinedAt  DateTime          @default(now())
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+model MatrixRoom {
+  id           String   @id @default(cuid())
+
+  matrixRoomId String   @unique  // !roomid:server format
+
+  roomType     String            // "dm" | "project"
+
+  // For DM rooms: store both user IDs (sorted to ensure uniqueness)
+  userAId      String?
+  userA        User?    @relation("MatrixRoomUserA", fields: [userAId], references: [id], onDelete: Cascade)
+
+  userBId      String?
+  userB        User?    @relation("MatrixRoomUserB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  // For project rooms
+  projectId    String?  @unique
+  project      Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+
+  @@unique([userAId, userBId])
+  @@index([userAId])
+  @@index([userBId])
+  @@index([projectId])
+  @@index([roomType])
+}
+
+model UserMatrixCredentials {
+  id            String   @id @default(cuid())
+
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  matrixUserId  String   @unique  // @handle:server format
+  password      String            // Encrypted with AES-256-GCM (for on-demand token generation)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([matrixUserId])
+}
+
+// ============================================================================
+// CHAT AUDIT LOGS
+// ============================================================================
+
+enum ChatAuditAction {
+  ROOM_CREATED
+  MEMBER_INVITED
+  MEMBER_REMOVED
+  MEMBER_JOINED
+  MEMBER_LEFT
+  ROOM_UPDATED
+  ROOM_DELETED
+}
+
+model ChatAuditLog {
+  id           String          @id @default(cuid())
+
+  action       ChatAuditAction
+  roomType     String          // "dm" | "project"
+
+  // Matrix room reference
+  matrixRoomId String
+
+  // Project reference (for project rooms)
+  projectId    String?
+
+  // Actor who performed the action
+  actorUserId  String?
+
+  // Target user (for invite/remove actions)
+  targetUserId String?
+
+  // Additional metadata (JSON)
+  metadata     String?
+
+  createdAt    DateTime        @default(now())
+
+  @@index([matrixRoomId])
+  @@index([projectId])
+  @@index([actorUserId])
+  @@index([targetUserId])
+  @@index([action])
   @@index([createdAt(sort: Desc)])
 }

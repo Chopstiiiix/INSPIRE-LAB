@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { projectSchema } from "@/lib/validations";
-import { addProject, deleteProject } from "@/app/actions/profile";
+import { createProject, deleteProject } from "@/app/actions/profile";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -30,7 +30,7 @@ export function ProjectsSection({ projects }: { projects: any[] }) {
 
   const onSubmit = async (data: ProjectForm) => {
     setError(null);
-    const result = await addProject(data);
+    const result = await createProject({ ...data, status: "ACTIVE", visibility: "PUBLIC" });
 
     if (result.error) {
       setError(result.error);
