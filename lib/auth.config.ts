@@ -41,6 +41,7 @@ export const authConfig = {
           id: user.id,
           email: user.email,
           name: user.name,
+          image: user.avatar,
         };
       },
     }),
@@ -49,12 +50,14 @@ export const authConfig = {
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.sub!;
+        session.user.image = token.picture as string | undefined;
       }
       return session;
     },
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id;
+        token.picture = user.image;
       }
       return token;
     },

@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 
 export function AppHeader() {
   const { data: session } = useSession();
@@ -33,8 +33,9 @@ export function AppHeader() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>
+                  <Avatar className="h-8 w-8 rounded-full">
+                    <AvatarImage src={session.user.image || undefined} alt={session.user.name || "Avatar"} />
+                    <AvatarFallback className="rounded-full">
                       {session.user.name?.[0]?.toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>

@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { MapPin, Globe, Calendar, Star, ExternalLink, Loader2, Flag } from "lucide-react";
 import { toggleFollow } from "@/app/actions/feed";
 import { createReport } from "@/app/actions/reports";
@@ -158,53 +159,63 @@ export function ProfileView({ user, isOwner, isFollowing }: ProfileViewProps) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Header Section */}
+      {/* Google-style Profile Header */}
       <div className="mb-8">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h1 className="text-4xl font-bold">{user.name}</h1>
-            <p className="text-xl text-muted-foreground mt-1">@{user.handle}</p>
-            {user.roleTitle && (
-              <p className="text-lg mt-2">{user.roleTitle}</p>
+        <div className="flex flex-col items-center text-center mb-6">
+          <Avatar className="h-[120px] w-[120px] rounded-full border-2 border-border mb-4">
+            <AvatarImage src={user.avatar || undefined} alt={user.name || "Avatar"} />
+            <AvatarFallback className="text-4xl rounded-full">
+              {user.name?.[0]?.toUpperCase() || "?"}
+            </AvatarFallback>
+          </Avatar>
+
+          <h1 className="text-3xl font-bold">{user.name}</h1>
+          <p className="text-lg text-muted-foreground">@{user.handle}</p>
+          {user.roleTitle && (
+            <p className="text-base text-muted-foreground mt-1">{user.roleTitle}</p>
+          )}
+
+          {user.bio && (
+            <p className="text-muted-foreground mt-3 max-w-lg">{user.bio}</p>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-2 mt-4">
+            {isOwner ? (
+              <Link href="/me/settings">
+                <Button>Edit Profile</Button>
+              </Link>
+            ) : (
+              <>
+                <Button
+                  variant={following ? "outline" : "default"}
+                  onClick={handleToggleFollow}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : following ? (
+                    "Following"
+                  ) : (
+                    "Follow"
+                  )}
+                </Button>
+                <MessageButton userId={user.id} userName={user.name} />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setReportDialogOpen(true)}
+                  title="Report user"
+                >
+                  <Flag className="h-4 w-4" />
+                </Button>
+              </>
             )}
           </div>
-          {isOwner ? (
-            <Link href="/me/settings">
-              <Button>Edit Profile</Button>
-            </Link>
-          ) : (
-            <div className="flex gap-2">
-              <Button
-                variant={following ? "outline" : "default"}
-                onClick={handleToggleFollow}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : following ? (
-                  "Following"
-                ) : (
-                  "Follow"
-                )}
-              </Button>
-              <MessageButton userId={user.id} userName={user.name} />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setReportDialogOpen(true)}
-                title="Report user"
-              >
-                <Flag className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
         </div>
 
-        {user.bio && (
-          <p className="text-muted-foreground mb-4">{user.bio}</p>
-        )}
-
-        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+        {/* Meta Info Row */}
+        <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
           {user.location && (
             <div className="flex items-center gap-1">
               <MapPin className="h-4 w-4" />
@@ -228,7 +239,8 @@ export function ProfileView({ user, isOwner, isFollowing }: ProfileViewProps) {
           </div>
         </div>
 
-        <div className="flex gap-4 mt-4">
+        {/* Follower/Following Counts */}
+        <div className="flex justify-center gap-6 mt-4">
           <div>
             <span className="font-bold">{user._count.following}</span>{" "}
             <span className="text-muted-foreground">Following</span>
@@ -239,8 +251,9 @@ export function ProfileView({ user, isOwner, isFollowing }: ProfileViewProps) {
           </div>
         </div>
 
+        {/* Links */}
         {user.links && user.links.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-4">
+          <div className="flex flex-wrap justify-center gap-3 mt-4">
             {user.links.map((link) => (
               <a
                 key={link.id}

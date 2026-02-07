@@ -12,10 +12,10 @@ export async function GET() {
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { role: true },
+      select: { role: true, avatar: true },
     });
 
-    return NextResponse.json({ role: user?.role || "USER" }, { status: 200 });
+    return NextResponse.json({ role: user?.role || "USER", avatar: user?.avatar || null }, { status: 200 });
   } catch (error) {
     console.error("Get user role error:", error);
     return NextResponse.json({ role: "USER" }, { status: 200 });

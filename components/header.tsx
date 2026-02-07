@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
@@ -9,6 +10,7 @@ import { MessageSquare } from "lucide-react";
 export function Header() {
   const { data: session } = useSession();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [avatar, setAvatar] = useState<string | null>(null);
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -16,6 +18,7 @@ export function Header() {
         .then((res) => res.json())
         .then((data) => {
           setIsAdmin(data.role === "ADMIN" || data.role === "MODERATOR");
+          if (data.avatar) setAvatar(data.avatar);
         })
         .catch(() => setIsAdmin(false));
     }
@@ -49,6 +52,19 @@ export function Header() {
               <Button variant="secondary" onClick={() => signOut()}>
                 Sign Out
               </Button>
+              {avatar ? (
+                <Image
+                  src={avatar}
+                  alt="Avatar"
+                  width={32}
+                  height={32}
+                  className="rounded-full border border-white object-cover w-8 h-8"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full border border-white bg-white/20 flex items-center justify-center text-white text-sm font-medium">
+                  {session.user?.name?.[0]?.toUpperCase() || "U"}
+                </div>
+              )}
             </>
           ) : (
             <>

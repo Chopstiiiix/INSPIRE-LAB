@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Plus, X, CheckCircle2 } from "lucide-react";
+import { AvatarUpload } from "@/components/avatar-upload";
 
 const onboardingSchema = z.object({
   handle: z
@@ -77,6 +78,7 @@ export function OnboardingFormClient({
   const [toolSearch, setToolSearch] = useState("");
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
   const [selectedToolIds, setSelectedToolIds] = useState<string[]>([]);
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
 
   const {
     register,
@@ -189,6 +191,17 @@ export function OnboardingFormClient({
       {/* Basic Info Section */}
       <div className="border border-border p-6 space-y-4">
         <h2 className="text-2xl font-semibold">Basic Information</h2>
+
+        <div className="space-y-2">
+          <Label>Profile Photo</Label>
+          <AvatarUpload
+            currentAvatar={avatarUrl}
+            onUploadComplete={(url) => {
+              setAvatarUrl(url);
+              setValue("avatar", url);
+            }}
+          />
+        </div>
 
         <div className="space-y-2">
           <Label htmlFor="handle">
