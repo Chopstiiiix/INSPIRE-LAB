@@ -45,10 +45,12 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
       bio: user.bio || "",
       location: user.location || "",
       avatar: user.avatar || "",
+      avatarVisibility: user.avatarVisibility || "PUBLIC",
     },
   });
 
   const avatar = watch("avatar");
+  const avatarVisibility = watch("avatarVisibility");
 
   const onSubmit = async (data: ProfileForm) => {
     setError(null);
@@ -73,7 +75,12 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
         <h2 className="text-2xl font-bold mb-6">Basic Information</h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <AvatarUpload currentAvatar={avatar} onUploadComplete={(url) => setValue("avatar", url)} />
+          <AvatarUpload
+            currentAvatar={avatar}
+            onUploadComplete={(url) => setValue("avatar", url)}
+            currentVisibility={avatarVisibility}
+            onVisibilityChange={(vis) => setValue("avatarVisibility", vis as "PUBLIC" | "PRIVATE" | "CONNECTIONS_ONLY")}
+          />
 
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>

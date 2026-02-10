@@ -3,13 +3,22 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useUploadThing } from "@/lib/uploadthing";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface AvatarUploadProps {
   currentAvatar?: string;
   onUploadComplete: (url: string) => void;
+  currentVisibility?: string;
+  onVisibilityChange?: (visibility: string) => void;
 }
 
-export function AvatarUpload({ currentAvatar, onUploadComplete }: AvatarUploadProps) {
+export function AvatarUpload({ currentAvatar, onUploadComplete, currentVisibility = "PUBLIC", onVisibilityChange }: AvatarUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const { startUpload } = useUploadThing("avatarUploader");
 
@@ -63,6 +72,20 @@ export function AvatarUpload({ currentAvatar, onUploadComplete }: AvatarUploadPr
           disabled={isUploading}
         />
         <p className="text-sm opacity-75 mt-2">Max 4MB, JPG or PNG</p>
+        {onVisibilityChange && (
+          <div className="mt-3">
+            <Select value={currentVisibility} onValueChange={onVisibilityChange}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Visibility" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="PUBLIC">Public</SelectItem>
+                <SelectItem value="PRIVATE">Private</SelectItem>
+                <SelectItem value="CONNECTIONS_ONLY">Connections Only</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
     </div>
   );

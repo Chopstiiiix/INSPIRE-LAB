@@ -101,8 +101,9 @@ model User {
   password      String?
   name          String?
   handle        String?    @unique
-  avatar        String?
-  roleTitle     String?
+  avatar           String?
+  avatarVisibility Visibility  @default(PUBLIC)
+  roleTitle        String?
   bio           String?
   location      String?
   website       String?

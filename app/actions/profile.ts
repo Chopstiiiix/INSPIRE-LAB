@@ -21,6 +21,7 @@ export async function getUserProfile(handle: string, viewerUserId?: string) {
         location: true,
         website: true,
         avatar: true,
+        avatarVisibility: true,
         createdAt: true,
         userSkills: {
           include: {
@@ -70,6 +71,16 @@ export async function getUserProfile(handle: string, viewerUserId?: string) {
       isFollowing = !!follow;
     }
 
+    // Filter avatar based on visibility
+    let resolvedAvatar = user.avatar;
+    if (viewerUserId !== user.id) {
+      if (user.avatarVisibility === "PRIVATE") {
+        resolvedAvatar = null;
+      } else if (user.avatarVisibility === "CONNECTIONS_ONLY" && !isFollowing) {
+        resolvedAvatar = null;
+      }
+    }
+
     // Filter projects based on visibility
     const filteredProjects = user.projects.filter((project) => {
       if (viewerUserId === user.id) return true; // Owner sees all
@@ -98,7 +109,8 @@ export async function getUserProfile(handle: string, viewerUserId?: string) {
       bio: user.bio,
       location: user.location,
       website: user.website,
-      avatar: user.avatar,
+      avatar: resolvedAvatar,
+      avatarVisibility: user.avatarVisibility,
       createdAt: user.createdAt,
       userSkills: user.userSkills,
       userTools: user.userTools,
@@ -758,6 +770,7 @@ const updateProfileSchema = z.object({
   bio: z.string().max(500).optional(),
   location: z.string().max(100).optional(),
   avatar: z.string().url().optional().or(z.literal("")),
+  avatarVisibility: z.enum(["PUBLIC", "PRIVATE", "CONNECTIONS_ONLY"]).optional(),
 });
 
 export async function updateProfile(data: z.infer<typeof updateProfileSchema>) {
@@ -797,6 +810,7 @@ export async function updateProfile(data: z.infer<typeof updateProfileSchema>) {
         bio: validated.bio || null,
         location: validated.location || null,
         avatar: validated.avatar || null,
+        ...(validated.avatarVisibility && { avatarVisibility: validated.avatarVisibility }),
       },
     });
 
