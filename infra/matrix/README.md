@@ -1,6 +1,6 @@
 # Matrix Synapse Setup
 
-This directory contains the Docker Compose configuration for Matrix Synapse, the chat backend for Kudo.
+This directory contains the Docker Compose configuration for Matrix Synapse, the chat backend for INSPIRE-LAB.
 
 ## Architecture
 
@@ -88,7 +88,7 @@ docker-compose up -d
 
 ```bash
 # Register an admin user for manual testing
-docker exec -it kudo-synapse register_new_matrix_user \
+docker exec -it inspire-lab-synapse register_new_matrix_user \
   -c /data/homeserver.yaml \
   -u admin \
   -p your_admin_password \
@@ -220,20 +220,20 @@ Store this as `MATRIX_ADMIN_TOKEN` in your app's `.env`.
 
 ```bash
 # Backup database
-docker exec kudo-matrix-postgres pg_dump -U synapse synapse > backup.sql
+docker exec inspire-lab-matrix-postgres pg_dump -U synapse synapse > backup.sql
 
 # Backup media
-docker cp kudo-synapse:/data/media_store ./media_backup
+docker cp inspire-lab-synapse:/data/media_store ./media_backup
 ```
 
 ### Restore
 
 ```bash
 # Restore database
-cat backup.sql | docker exec -i kudo-matrix-postgres psql -U synapse synapse
+cat backup.sql | docker exec -i inspire-lab-matrix-postgres psql -U synapse synapse
 
 # Restore media
-docker cp ./media_backup/. kudo-synapse:/data/media_store/
+docker cp ./media_backup/. inspire-lab-synapse:/data/media_store/
 ```
 
 ### Logs
@@ -243,7 +243,7 @@ docker cp ./media_backup/. kudo-synapse:/data/media_store/
 docker-compose logs -f synapse
 
 # View specific log file
-docker exec kudo-synapse cat /data/homeserver.log
+docker exec inspire-lab-synapse cat /data/homeserver.log
 ```
 
 ### Update

@@ -1,6 +1,6 @@
 # Infrastructure
 
-This directory contains Docker Compose configurations for the communication services used by Kudo.
+This directory contains Docker Compose configurations for the communication services used by INSPIRE-LAB.
 
 ## Services
 
@@ -49,7 +49,7 @@ docker run --rm \
 docker-compose up -d
 
 # Create admin user
-docker exec -it kudo-synapse register_new_matrix_user \
+docker exec -it inspire-lab-synapse register_new_matrix_user \
   -c /data/homeserver.yaml \
   -u admin \
   -p your_admin_password \
@@ -74,7 +74,7 @@ docker-compose up -d
 Copy the generated credentials to your main `.env` file:
 
 ```bash
-# From the kudo root directory
+# From the inspire-lab root directory
 cat infra/.env >> .env
 
 # Then add Matrix admin token after logging in
@@ -85,7 +85,7 @@ cat infra/.env >> .env
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           Kudo Application                                   │
+│                           INSPIRE-LAB Application                                   │
 │  ┌────────────────────────────────────────────────────────────────────────┐ │
 │  │                         Next.js Server                                  │ │
 │  │                                                                        │ │
@@ -198,13 +198,13 @@ cd livekit && docker-compose logs -f
 
 ```bash
 # Matrix database
-docker exec kudo-matrix-postgres pg_dump -U synapse synapse > matrix-backup.sql
+docker exec inspire-lab-matrix-postgres pg_dump -U synapse synapse > matrix-backup.sql
 
 # Matrix media
-docker cp kudo-synapse:/data/media_store ./matrix-media-backup
+docker cp inspire-lab-synapse:/data/media_store ./matrix-media-backup
 
 # Redis (LiveKit state is ephemeral, but backup if needed)
-docker exec kudo-livekit-redis redis-cli BGSAVE
+docker exec inspire-lab-livekit-redis redis-cli BGSAVE
 ```
 
 ### Update Services

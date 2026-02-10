@@ -20,7 +20,7 @@ services:
   # ---------------------------------------------------------------------------
   livekit:
     image: livekit/livekit-server:latest
-    container_name: kudo-livekit
+    container_name: inspire-lab-livekit
     restart: unless-stopped
     command: --config /etc/livekit.yaml
     volumes:
@@ -49,7 +49,7 @@ services:
   # ---------------------------------------------------------------------------
   redis:
     image: redis:7-alpine
-    container_name: kudo-livekit-redis
+    container_name: inspire-lab-livekit-redis
     restart: unless-stopped
     command: redis-server --appendonly yes
     volumes:
@@ -68,7 +68,7 @@ services:
   # Required for NAT traversal when peers can't connect directly
   coturn:
     image: coturn/coturn:latest
-    container_name: kudo-coturn
+    container_name: inspire-lab-coturn
     restart: unless-stopped
     volumes:
       - ./turnserver.conf:/etc/coturn/turnserver.conf:ro
@@ -86,8 +86,8 @@ services:
 
 volumes:
   redis-data:
-    name: kudo-livekit-redis-data
+    name: inspire-lab-livekit-redis-data
 
 networks:
   livekit-network:
-    name: kudo-livekit-network
+    name: inspire-lab-livekit-network

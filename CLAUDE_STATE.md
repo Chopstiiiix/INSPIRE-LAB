@@ -1,7 +1,7 @@
 # INSPIRE-LAB - Claude Implementation State
 
 ## Project Summary
-**App Name**: INSPIRE-LAB (renamed from "Kudo")
+**App Name**: INSPIRE-LAB (renamed from "INSPIRE-LAB")
 **Purpose**: Invite-only professional networking platform
 **Tech Stack**:
 - Next.js 16 (App Router)
@@ -267,7 +267,7 @@ UPLOADTHING_APP_ID="" (optional)
 ## Notes for Resume
 
 - User wanted full Next.js scaffold with route protection
-- Changed app name from "kudo" to "inspire-lab"
+- Changed app name from "inspire-lab" to "inspire-lab"
 - Middleware protects /app routes (requires ACTIVE status)
 - PENDING users must complete onboarding (set handle + roleTitle)
 - Black UI theme is fully configured via CSS variables

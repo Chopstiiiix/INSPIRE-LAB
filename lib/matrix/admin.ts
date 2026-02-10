@@ -240,7 +240,7 @@ export async function loginUser(username: string, password: string): Promise<Mat
         user: username,
       },
       password,
-      initial_device_display_name: "Kudo App",
+      initial_device_display_name: "INSPIRE-LAB",
     }),
   });
 

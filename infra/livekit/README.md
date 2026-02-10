@@ -1,6 +1,6 @@
 # LiveKit Video Infrastructure Setup
 
-This directory contains the Docker Compose configuration for LiveKit, the video calling backend for Kudo.
+This directory contains the Docker Compose configuration for LiveKit, the video calling backend for INSPIRE-LAB.
 
 ## Architecture
 
@@ -180,8 +180,8 @@ server {
 
 ```bash
 # Copy certificates to coturn volume
-docker cp /etc/letsencrypt/live/turn.yourdomain.com/fullchain.pem kudo-coturn:/etc/coturn/cert.pem
-docker cp /etc/letsencrypt/live/turn.yourdomain.com/privkey.pem kudo-coturn:/etc/coturn/key.pem
+docker cp /etc/letsencrypt/live/turn.yourdomain.com/fullchain.pem inspire-lab-coturn:/etc/coturn/cert.pem
+docker cp /etc/letsencrypt/live/turn.yourdomain.com/privkey.pem inspire-lab-coturn:/etc/coturn/key.pem
 
 # Update turnserver.conf
 # Uncomment the TLS certificate lines
@@ -351,8 +351,8 @@ turnutils_uclient -t -u username -w password turn.yourdomain.com
 
 ```bash
 # Check Redis is running
-docker exec kudo-livekit-redis redis-cli ping
+docker exec inspire-lab-livekit-redis redis-cli ping
 
 # Check LiveKit can reach Redis
-docker exec kudo-livekit wget -qO- http://redis:6379
+docker exec inspire-lab-livekit wget -qO- http://redis:6379
 ```

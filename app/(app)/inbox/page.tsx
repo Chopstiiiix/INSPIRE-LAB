@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { InboxList } from "./inbox-list";
 
 export const metadata = {
-  title: "Inbox - Kudo",
+  title: "Inbox - INSPIRE-LAB",
   description: "Your private conversations",
 };
 

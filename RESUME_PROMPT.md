@@ -87,7 +87,7 @@ But the new shadcn Input component doesn't have `error` or `label` props.
 
 ## Important Context
 
-- **App name**: "inspire-lab" (not "kudo")
+- **App name**: "inspire-lab" (not "inspire-lab")
 - **Theme**: Black background, white text/borders, sharp corners (0rem radius)
 - **Routes**:
   - `/` → Landing page (public)
