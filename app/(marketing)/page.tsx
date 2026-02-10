@@ -10,7 +10,7 @@ export default function LandingPage() {
         <div className="max-w-4xl text-center space-y-8">
           <div className="space-y-4">
             <h2 className="text-5xl md:text-6xl font-bold tracking-tight">
-              Invite-Only Professional Network
+              Professional Network
             </h2>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
               A curated community for professionals to connect, collaborate, and showcase their work.
@@ -20,7 +20,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/sign-up">
               <Button size="lg" className="w-full sm:w-auto">
-                Request Invite
+                Get Started
               </Button>
             </Link>
             <Link href="/sign-in">
@@ -38,7 +38,7 @@ export default function LandingPage() {
               </CardHeader>
               <CardContent>
                 <CardDescription>
-                  Join a selective network of verified professionals through our invite-only system.
+                  Join a network of verified professionals and build meaningful connections.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -68,12 +68,12 @@ export default function LandingPage() {
 
           {/* CTA */}
           <div className="mt-16 p-8 border border-border">
-            <h3 className="text-2xl font-bold mb-4">Need an invite code?</h3>
+            <h3 className="text-2xl font-bold mb-4">Ready to get started?</h3>
             <p className="text-muted-foreground mb-6">
-              INSPIRE-LAB is invite-only. Connect with existing members or request access.
+              Create your profile and start connecting with professionals today.
             </p>
             <Link href="/sign-up">
-              <Button variant="outline">Sign Up with Code</Button>
+              <Button variant="outline">Sign Up Now</Button>
             </Link>
           </div>
         </div>

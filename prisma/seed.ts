@@ -133,23 +133,7 @@ async function main() {
   console.log(`✅ Created ${createdToolTags.length} tool tags`);
 
   // ============================================================================
-  // 4. CREATE INVITE CODE WITH 50 USES
-  // ============================================================================
-  const inviteCode = await prisma.inviteCode.upsert({
-    where: { code: "WELCOME2026" },
-    update: { enabled: true, expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) },
-    create: {
-      code: "WELCOME2026",
-      maxUses: 50,
-      enabled: true,
-      createdById: admin.id,
-      expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
-    },
-  });
-  console.log("✅ Created invite code: WELCOME2026 (50 uses)");
-
-  // ============================================================================
-  // 5. CREATE TEST ACTIVE USERS
+  // 4. CREATE TEST ACTIVE USERS
   // ============================================================================
   const userPassword = await bcrypt.hash("password123", 10);
 
@@ -211,7 +195,7 @@ async function main() {
   console.log("✅ Created test users: alice, bob, charlie");
 
   // ============================================================================
-  // 6. ADD SKILLS TO ALICE
+  // 5. ADD SKILLS TO ALICE
   // ============================================================================
   const jsTag = createdSkillTags.find((t) => t.slug === "javascript");
   const tsTag = createdSkillTags.find((t) => t.slug === "typescript");
@@ -236,7 +220,7 @@ async function main() {
   }
 
   // ============================================================================
-  // 7. ADD TOOLS TO ALICE
+  // 6. ADD TOOLS TO ALICE
   // ============================================================================
   const vscodeTag = createdToolTags.find((t) => t.slug === "vscode");
   const gitTag = createdToolTags.find((t) => t.slug === "git");
@@ -257,7 +241,7 @@ async function main() {
   }
 
   // ============================================================================
-  // 8. ADD PROJECTS TO ALICE
+  // 7. ADD PROJECTS TO ALICE
   // ============================================================================
   await prisma.project.createMany({
     data: [
@@ -287,7 +271,7 @@ async function main() {
   console.log("✅ Added projects to Alice");
 
   // ============================================================================
-  // 9. ADD QUALIFICATIONS TO ALICE
+  // 8. ADD QUALIFICATIONS TO ALICE
   // ============================================================================
   await prisma.qualification.createMany({
     data: [
@@ -312,7 +296,7 @@ async function main() {
   console.log("✅ Added qualifications to Alice");
 
   // ============================================================================
-  // 10. CREATE FOLLOW RELATIONSHIPS
+  // 9. CREATE FOLLOW RELATIONSHIPS
   // ============================================================================
   await prisma.follow.createMany({
     data: [
@@ -327,7 +311,7 @@ async function main() {
   console.log("✅ Created follow relationships");
 
   // ============================================================================
-  // 11. CREATE VOUCH FROM BOB TO ALICE
+  // 10. CREATE VOUCH FROM BOB TO ALICE
   // ============================================================================
   await prisma.vouch.upsert({
     where: {
@@ -345,33 +329,6 @@ async function main() {
   });
   console.log("✅ Created vouch from Bob to Alice");
 
-  // ============================================================================
-  // 12. CREATE ADDITIONAL INVITE CODES
-  // ============================================================================
-  await prisma.inviteCode.upsert({
-    where: { code: "BETA-ACCESS" },
-    update: { enabled: true },
-    create: {
-      code: "BETA-ACCESS",
-      maxUses: 100,
-      enabled: true,
-      createdById: admin.id,
-    },
-  });
-
-  await prisma.inviteCode.upsert({
-    where: { code: "STAFF-2026" },
-    update: { enabled: true, expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) },
-    create: {
-      code: "STAFF-2026",
-      maxUses: 25,
-      enabled: true,
-      createdById: admin.id,
-      expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days
-    },
-  });
-  console.log("✅ Created additional invite codes");
-
   console.log("\n🎉 Seed completed successfully!\n");
 
   console.log("=".repeat(60));
@@ -388,14 +345,6 @@ async function main() {
   console.log("Email:    alice@example.com, bob@example.com, charlie@example.com");
   console.log("Password: password123");
   console.log("Status:   ACTIVE");
-  console.log();
-
-  console.log("=".repeat(60));
-  console.log("INVITE CODES");
-  console.log("=".repeat(60));
-  console.log("WELCOME2026  - 50 uses, expires in 1 year");
-  console.log("BETA-ACCESS  - 100 uses, no expiration");
-  console.log("STAFF-2026   - 25 uses, expires in 90 days");
   console.log();
 
   console.log("=".repeat(60));
