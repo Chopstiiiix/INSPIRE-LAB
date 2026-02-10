@@ -136,17 +136,17 @@ async function main() {
   // 4. CREATE INVITE CODE WITH 50 USES
   // ============================================================================
   const inviteCode = await prisma.inviteCode.upsert({
-    where: { code: "WELCOME2024" },
-    update: {},
+    where: { code: "WELCOME2026" },
+    update: { enabled: true, expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) },
     create: {
-      code: "WELCOME2024",
+      code: "WELCOME2026",
       maxUses: 50,
       enabled: true,
       createdById: admin.id,
       expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
     },
   });
-  console.log("✅ Created invite code: WELCOME2024 (50 uses)");
+  console.log("✅ Created invite code: WELCOME2026 (50 uses)");
 
   // ============================================================================
   // 5. CREATE TEST ACTIVE USERS
@@ -350,7 +350,7 @@ async function main() {
   // ============================================================================
   await prisma.inviteCode.upsert({
     where: { code: "BETA-ACCESS" },
-    update: {},
+    update: { enabled: true },
     create: {
       code: "BETA-ACCESS",
       maxUses: 100,
@@ -360,10 +360,10 @@ async function main() {
   });
 
   await prisma.inviteCode.upsert({
-    where: { code: "STAFF-2024" },
-    update: {},
+    where: { code: "STAFF-2026" },
+    update: { enabled: true, expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) },
     create: {
-      code: "STAFF-2024",
+      code: "STAFF-2026",
       maxUses: 25,
       enabled: true,
       createdById: admin.id,
@@ -393,9 +393,9 @@ async function main() {
   console.log("=".repeat(60));
   console.log("INVITE CODES");
   console.log("=".repeat(60));
-  console.log("WELCOME2024  - 50 uses, expires in 1 year");
+  console.log("WELCOME2026  - 50 uses, expires in 1 year");
   console.log("BETA-ACCESS  - 100 uses, no expiration");
-  console.log("STAFF-2024   - 25 uses, expires in 90 days");
+  console.log("STAFF-2026   - 25 uses, expires in 90 days");
   console.log();
 
   console.log("=".repeat(60));
