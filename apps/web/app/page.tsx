@@ -1,102 +1,60 @@
-import Image, { type ImageProps } from "next/image";
-import { Button } from "@repo/ui/button";
-import styles from "./page.module.css";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import Link from "next/link";
 
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
-};
-
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
+export default async function Home() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) redirect("/dashboard");
 
   return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
-
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <ThemeImage
-          className={styles.logo}
-          srcLight="turborepo-dark.svg"
-          srcDark="turborepo-light.svg"
-          alt="Turborepo logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>apps/web/app/page.tsx</code>
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://turborepo.dev/docs?utm_source"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+    <main className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center px-4">
+      <div className="text-center max-w-3xl">
+        {/* Logo */}
+        <div className="mb-8 inline-flex items-center gap-2">
+          <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-cyan-400 rounded-lg" />
+          <span className="font-mono text-2xl font-bold tracking-tight">INSPIRE LAB</span>
         </div>
-        <Button appName="web" className={styles.secondary}>
-          Open alert
-        </Button>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://turborepo.dev?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to turborepo.dev →
-        </a>
-      </footer>
-    </div>
+
+        <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-br from-white via-violet-200 to-cyan-400 bg-clip-text text-transparent leading-tight">
+          Build together.<br />Ship faster.
+        </h1>
+
+        <p className="text-lg text-gray-400 mb-12 max-w-xl mx-auto">
+          A real-time collaborative workspace for developers — powered by AI agents,
+          Monaco editor, and instant multiplayer sync.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            href="/login"
+            className="px-8 py-3 bg-violet-600 hover:bg-violet-500 rounded-lg font-semibold transition-colors"
+          >
+            Get Started Free
+          </Link>
+          <Link
+            href="/login"
+            className="px-8 py-3 border border-white/20 hover:border-white/40 rounded-lg font-semibold transition-colors"
+          >
+            Sign In
+          </Link>
+        </div>
+
+        {/* Features grid */}
+        <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+          {[
+            { icon: "⚡", title: "Real-time Collab", desc: "Simultaneous editing with live cursors and presence indicators" },
+            { icon: "🤖", title: "AI Agents", desc: "Claude, GPT-4, Copilot — choose your preferred coding assistant" },
+            { icon: "🔗", title: "Invite Anyone", desc: "Share workspaces with teammates via link or email invite" },
+          ].map((f) => (
+            <div key={f.title} className="p-6 bg-white/5 border border-white/10 rounded-xl">
+              <div className="text-3xl mb-3">{f.icon}</div>
+              <h3 className="font-semibold mb-2">{f.title}</h3>
+              <p className="text-sm text-gray-400">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </main>
   );
 }

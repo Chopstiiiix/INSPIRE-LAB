@@ -5,7 +5,17 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": [
+        "DATABASE_URL",
+        "DIRECT_URL",
+        "ANTHROPIC_API_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "NEXT_PUBLIC_SUPABASE_CALLBACK_URL",
+        "NEXT_PUBLIC_WS_URL"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -16,6 +26,9 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "db:push": {
+      "cache": false
     }
   }
 }
