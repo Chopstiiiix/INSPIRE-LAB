@@ -1,19 +1,20 @@
 {
-        "name": "ws-server",
-        "version": "0.0.1",
-        "scripts": {
-                    "dev": "tsx server.ts",
-                    "start": "tsx server.ts"
-        },
-        "dependencies": {
-                    "ws": "^8.19.0",
-                    "y-websocket": "^3.0.0",
-                    "yjs": "^13.6.29"
-        },
-        "devDependencies": {
-                    "@types/node": "^25.3.5",
-                    "@types/ws": "^8.18.1",
-                    "tsx": "^4.0.0",
-                    "typescript": "^5.9.3"
-        }
+            "name": "ws-server",
+            "version": "0.0.1",
+            "scripts": {
+                            "dev": "tsx server.ts",
+                            "start": "tsx server.ts"
+            },
+            "dependencies": {
+                            "lib0": "^0.2.0",
+                            "ws": "^8.19.0",
+                            "y-protocols": "^1.0.0",
+                            "yjs": "^13.6.29"
+            },
+            "devDependencies": {
+                            "@types/node": "^22.0.0",
+                            "@types/ws": "^8.18.1",
+                            "tsx": "^4.0.0",
+                            "typescript": "^5.0.0"
+            }
 }
