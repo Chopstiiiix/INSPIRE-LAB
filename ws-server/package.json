@@ -2,7 +2,8 @@
   "name": "ws-server",
   "version": "0.0.1",
   "scripts": {
-    "dev": "ts-node server.ts"
+    "dev": "ts-node server.ts",
+        "start": "ts-node server.ts"
   },
   "dependencies": {
     "ws": "^8.0.0",
