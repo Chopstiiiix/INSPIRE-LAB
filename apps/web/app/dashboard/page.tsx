@@ -9,17 +9,35 @@ export default async function DashboardPage() {
 
   if (!authUser) redirect("/login");
 
-  // Sync user to our DB
-  const user = await prisma.user.upsert({
+  // Sync user to our DB — find by supabaseId first, then fall back to email
+  let user = await prisma.user.findUnique({
     where: { supabaseId: authUser.id },
-    update: { email: authUser.email || "" },
-    create: {
-      supabaseId: authUser.id,
-      email: authUser.email || "",
-      name: authUser.user_metadata?.full_name || null,
-      avatarUrl: authUser.user_metadata?.avatar_url || null,
-    },
   });
+
+  if (!user && authUser.email) {
+    // User may exist from a previous signup attempt with a different supabaseId
+    user = await prisma.user.findUnique({
+      where: { email: authUser.email },
+    });
+    if (user) {
+      // Link existing email-matched user to current supabase account
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { supabaseId: authUser.id },
+      });
+    }
+  }
+
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        supabaseId: authUser.id,
+        email: authUser.email || "",
+        name: authUser.user_metadata?.full_name || null,
+        avatarUrl: authUser.user_metadata?.avatar_url || null,
+      },
+    });
+  }
 
   const workspaces = await prisma.workspace.findMany({
     where: {
