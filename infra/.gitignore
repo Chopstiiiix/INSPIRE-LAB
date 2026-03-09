@@ -1,0 +1,27 @@
+# Environment files with secrets
+.env
+*.env.local
+
+# Docker volumes and data
+synapse-data/
+matrix/synapse-data/
+livekit/data/
+
+# Generated configs with secrets baked in
+# (keep the templates, ignore modified versions)
+# matrix/homeserver.yaml  # Uncomment if you modify with real secrets
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+certs/
+
+# Logs
+*.log
+logs/
+
+# Backups
+*.sql
+*-backup/
+backups/
